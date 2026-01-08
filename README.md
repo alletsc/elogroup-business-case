@@ -111,7 +111,7 @@ Durante a análise do case, algumas informações não foram explicitadas. Para 
 |----------|----------------|---------------|
 | Integração ERP | Não há no MVP | Complexidade; integração na Fase 2 |
 | Ambiente de hospedagem | Cloud (GCP/AWS) | Não há restrição on-premises |
-| Autenticação | OAuth 2.0 (Google/Microsoft) | Padrão corporativo; alternativa: JWT |
+| Autenticação | Login/senha ou OAuth 2.0 + JWT | SSO corporativo (Google/Microsoft); sessões stateless |
 | Formato de comprovantes | PDF, JPG, PNG (até 10MB) | Formatos mais comuns para NFs |
 
 ### Escopo Explicitamente Excluído do MVP
