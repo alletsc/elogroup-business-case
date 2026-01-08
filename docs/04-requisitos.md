@@ -8,7 +8,7 @@
 
 | ID | Requisito |
 |----|-----------|
-| RF01.1 | O sistema deve autenticar usuários via login/senha ou OAuth 2.0 (Google/Microsoft) |
+| RF01.1 | O sistema deve autenticar usuários exclusivamente via OAuth 2.0 (Google Workspace ou Microsoft Entra ID) |
 | RF01.2 | O sistema deve implementar RBAC com 4 papéis: Colaborador, Técnico-Adm, Gestor, Financeiro |
 | RF01.3 | O sistema deve gerar tokens JWT com expiração de 8 horas |
 | RF01.4 | O sistema deve vincular gestores a centros de custo (relação N:N) |
@@ -171,7 +171,7 @@
 
 | ID | Requisito |
 |----|-----------|
-| RNF04.1 | Autenticação via OAuth 2.0 + JWT |
+| RNF04.1 | Autenticação exclusiva via OAuth 2.0 (Google/Microsoft) + JWT |
 | RNF04.2 | Criptografia de dados em trânsito (HTTPS/TLS 1.3) |
 | RNF04.3 | Criptografia de dados sensíveis em repouso (AES-256) |
 | RNF04.4 | Rate limiting: 100 req/min por usuário |

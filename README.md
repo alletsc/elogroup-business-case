@@ -14,7 +14,7 @@ Esta proposta apresenta um sistema que **formaliza o processo de reembolso corpo
 
 - **[1. Visão Estratégica](docs/01-visao-estrategica.md)**: Problema, proposta de valor e impactos esperados
 - **[2. High Level Design](docs/02-high-level-design.md)**: Arquitetura, stack tecnológica e fluxos
-- **[3. Protótipos Visuais](docs/03-prototipos.md)**: Wireframes mobile e web por perfil
+- **[3. Protótipos Visuais](docs/03-prototipos.md)**: Design system e fluxo de interação
 - **[4. Requisitos](docs/04-requisitos.md)**: Funcionais e não-funcionais
 - **[5. Planejamento](docs/05-planejamento.md)**: Backlog, sprints e cronograma
 
@@ -53,14 +53,19 @@ O processo atual de reembolso corporativo apresenta **fragilidades estruturais**
 
 ```mermaid
 flowchart LR
-  FE[Frontend<br/>Vue 3 - PWA] --> BE[Backend<br/>Django + DRF]
-  BE --> DB[Banco<br/>PostgreSQL]
+  FE[Frontend<br/>Vue 3 PWA] --> BE[Backend<br/>Django + DRF]
+  BE --> DB[(PostgreSQL)]
+  BE --> Redis[(Redis)]
+  BE --> GCS[(Cloud Storage)]
+  BE --> OAuth[OAuth 2.0<br/>Google/Microsoft]
+  BE --> Celery[Celery<br/>Workers]
+  Celery --> SendGrid[SendGrid]
 ```
 
 - **Complexidade:** Baixa (monolito modular, stack amplamente conhecida)
 - **Time:** 2 Devs + 1 Tech Lead + 1 Consultor
-- **Prazo:** 3-4 meses para MVP funcional
-- **Custo de infra:** R$ 99-291/mês ([detalhamento](docs/02-high-level-design.md#8-estimativa-de-custos-de-infraestrutura))
+- **Prazo:** 4 meses (8 sprints de 2 semanas) para MVP funcional
+- **Custo de infra:** R$ 186-468/mês ([detalhamento](docs/02-high-level-design.md#8-estimativa-de-custos-de-infraestrutura))
 - **Escalabilidade:** Horizontal (containers, orquestração futura)
 
 ---
@@ -71,12 +76,14 @@ flowchart LR
 |-------------------------------------------------|------------------------|-----------------------------|
 | Cadastro de solicitações com múltiplos itens    | OCR de comprovantes    | Scanner QR Code + API SEFAZ |
 | Upload obrigatório de comprovantes fiscais      | Push notifications     | Integração ERP              |
-| Validação automática da regra de 90 dias        |                        | App nativo (Flutter)        |
+| Validação automática da regra de 90 dias        |                        | App nativo (React Native)   |
 | Fluxo de validação técnico-administrativa       |                        |                             |
 | Aprovação por gestor (por centro de custo)      |                        |                             |
 | Fila de pagamentos para o financeiro            |                        |                             |
-| Notificações por e-mail                         |                        |                             |
+| Notificações por e-mail (assíncronas)           |                        |                             |
 | Trilha de auditoria completa                    |                        |                             |
+| Processamento assíncrono (Celery + Redis)       |                        |                             |
+| Observabilidade (Logs, Métricas, Traces)        |                        |                             |
 
 ---
 ## Premissas Assumidas
@@ -87,8 +94,8 @@ Durante a análise do case, algumas informações não foram explicitadas. Para 
 
 | Premissa | Valor Assumido | Impacto na Solução |
 |----------|----------------|-------------------|
-| Porte da empresa | ~500 colaboradores ativos | Dimensiona arquitetura e custos |
-| Volume de solicitações | ~500/mês | Define requisitos de escalabilidade |
+| Porte da empresa | ~500 colaboradores ativos (MVP) | Dimensiona arquitetura inicial; sistema suporta até 10.000 |
+| Volume de solicitações | ~500/mês (MVP) | Estimativa inicial; sistema suporta até 50.000/mês |
 | Acesso mobile | Colaboradores possuem smartphones | Viabiliza abordagem PWA mobile-first |
 | Cadastro de usuários | Já existe em sistema de RH | Sistema consome dados, não os cria |
 | Centros de custo | Já estão definidos e mapeados | Sistema importa a estrutura existente |
@@ -111,7 +118,7 @@ Durante a análise do case, algumas informações não foram explicitadas. Para 
 |----------|----------------|---------------|
 | Integração ERP | Não há no MVP | Complexidade; integração na Fase 2 |
 | Ambiente de hospedagem | Cloud (GCP/AWS) | Não há restrição on-premises |
-| Autenticação | Login/senha ou OAuth 2.0 + JWT | SSO corporativo (Google/Microsoft); sessões stateless |
+| Autenticação | OAuth 2.0 (Google/Microsoft) + JWT | SSO corporativo exclusivo; sessões stateless |
 | Formato de comprovantes | PDF, JPG, PNG (até 10MB) | Formatos mais comuns para NFs |
 
 ### Escopo Explicitamente Excluído do MVP
@@ -122,7 +129,7 @@ Durante a análise do case, algumas informações não foram explicitadas. Para 
 | Push notifications | Requer infraestrutura adicional | Fase 2a |
 | Integração API SEFAZ + QR Code | Dependência externa, SLA instável | Fase 2b |
 | Integração ERP | Complexidade de integração | Fase 2b |
-| App nativo (iOS/Android) | PWA suficiente para validar produto | Fase 2b |
+| App nativo (React Native) | PWA suficiente para validar produto | Fase 2b |
 | Rateio entre centros de custo | Complexidade adicional no fluxo | Fase 2b |
 | Multi-idioma | Escopo Brasil | Fase 2 (se internacionalizar) |
 | Multi-moeda | Escopo BRL | Fase 2 (despesas internacionais) |
@@ -156,14 +163,12 @@ flowchart LR
 
 ## Cronograma Resumido
 
-| Marco | Semana | Entrega |
-|-------|--------|---------|
-| M1 | 2 | Infraestrutura + CI/CD |
-| M2 | 4 | Autenticação + CRUD básico |
-| M3 | 8 | **MVP Básico** - Fluxo completo funcionando |
-| M4 | 12 | Financeiro + Notificações + Ajustes |
-| M5 | 14 | Relatórios + Testes |
-| M6 | 16 | **Go-Live** |
+| Marco | Sprint | Semana | Entrega |
+|-------|--------|--------|---------|
+| M1 | 2 | 4 | Infraestrutura + CI/CD |
+| M2 | 4 | 8 | Autenticação + CRUD básico |
+| M3 | 6 | 12 | Validação Técnico-Adm |
+| M4 | 8 | 16 | **MVP Completo** - Fluxo end-to-end |
 
 ## Equipe
 
@@ -182,7 +187,7 @@ Para detalhes técnicos, consulte a documentação na pasta `/docs`:
 
 - [Visão Estratégica](docs/01-visao-estrategica.md) - Análise do problema e proposta de valor
 - [High Level Design](docs/02-high-level-design.md) - Arquitetura e decisões técnicas
-- [Protótipos](docs/03-prototipos.md) - Wireframes de todas as telas
+- [Protótipos](docs/03-prototipos.md) - Design system e fluxo de interação
 - [Requisitos](docs/04-requisitos.md) - RF e RNF detalhados
 - [Planejamento](docs/05-planejamento.md) - Backlog completo e cronograma
 
