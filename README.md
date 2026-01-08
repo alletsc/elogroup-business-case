@@ -60,7 +60,7 @@ flowchart LR
 - **Complexidade:** Baixa (monolito modular, stack amplamente conhecida)
 - **Time:** 2 Devs + 1 Tech Lead + 1 Consultor
 - **Prazo:** 3-4 meses para MVP funcional
-- **Custo de infra:** R$ 60-150/mês ([detalhamento](docs/02-high-level-design.md#8-estimativa-de-custos-de-infraestrutura))
+- **Custo de infra:** R$ 99-291/mês ([detalhamento](docs/02-high-level-design.md#8-estimativa-de-custos-de-infraestrutura))
 - **Escalabilidade:** Horizontal (containers, orquestração futura)
 
 ---
