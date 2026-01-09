@@ -17,7 +17,7 @@
 
 ## 2. Backlog - Épicos
 
-** Abordagem com Story Points (SP)?**
+**Abordagem com Story Points (SP)**
 
 SP =  unidade de estimativa ágil que mede o **esforço relativo** de uma tarefa, não o tempo em horas.
 
@@ -29,7 +29,7 @@ SP =  unidade de estimativa ágil que mede o **esforço relativo** de uma tarefa
 | 13 | Complexa | Fluxo completo com múltiplas regras |
 | 21+ | Muito complexa | Deve ser quebrada em tarefas menores |
 
-**Velocity (velocidade do time):** Se o time entrega ~30 SP por sprint e o backlog tem 272 SP, então: 272 ÷ 30 ≈ 9 sprints.
+**Velocity (velocidade do time):** Se o time entrega ~34 SP por sprint e o backlog tem 272 SP, então: 272 ÷ 34 ≈ 8 sprints.
 
 | Épico | Descrição | Story Points | % Total |
 |-------|-----------|--------------|---------|
@@ -49,8 +49,10 @@ SP =  unidade de estimativa ágil que mede o **esforço relativo** de uma tarefa
 **Premissas:**
 
 - Sprints de 2 semanas (10 dias úteis)
-- Velocity estimada: 30-35 Story Points por sprint
+- Velocity estimada: ~34 Story Points por sprint (média)
 - Total de sprints: 8 sprints (16 semanas = 4 meses)
+
+> **Nota:** A carga varia por sprint. Sprints iniciais têm menos SP (fase de setup), sprints finais têm mais SP (integração e go-live). Ajustes de escopo podem ser feitos durante as Sprint Reviews.
 
 ### Sprint 0: Kickoff (Semana -1)
 
@@ -76,35 +78,40 @@ SP =  unidade de estimativa ágil que mede o **esforço relativo** de uma tarefa
 
 ### Sprint 3-4: Autenticação + Solicitação Básica
 
-**Story Points:** 47 SP (23-24 SP/sprint)
+**Story Points:** 68 SP (34 SP/sprint) - Épicos E2 + E3
 
 **Entregáveis:**
 - Login OAuth funcional com RBAC
 - Colaborador cria solicitação com itens
+- Upload de comprovantes funcionando
 - App mobile básico funcional
 
 **Marco M2:** MVP Técnico (Autenticação + CRUD)
 
-### Sprint 5-6: Validação Técnico-Administrativa
+### Sprint 5-6: Validação + Aprovação
 
-**Story Points:** 31 SP (15-16 SP/sprint)
+**Story Points:** 75 SP (37-38 SP/sprint) - Épicos E4 + E5
 
 **Entregáveis:**
-- Dashboard web de validação
+- Dashboard web de validação técnica
 - Fluxo completo de validação funcional
 - Solicitação de ajustes funcionando
-
-**Marco M3:** Fluxo de Validação Completo
-
-### Sprint 7-8: Aprovação Gerencial + Pagamento
-
-**Story Points:** 72 SP (36 SP/sprint)
-
-**Entregáveis:**
 - Dashboard mobile de aprovação gerencial
 - Lógica de aprovação parcial
+
+**Marco M3:** Fluxo de Validação e Aprovação Completo
+
+### Sprint 7-8: Pagamento + Notificações + Go-Live
+
+**Story Points:** 101 SP (50-51 SP/sprint) - Épicos E6 + E7 + E8 + E9
+
+**Entregáveis:**
 - Dashboard de pagamentos
-- Fluxo end-to-end funcionando
+- Sistema de notificações (e-mail + in-app)
+- Trilha de auditoria completa
+- Testes end-to-end
+- Documentação e treinamento
+- Go-live
 
 **Marco M4:** MVP Funcional (Fluxo Core Completo)
 
@@ -155,7 +162,7 @@ gantt
 | R1 | **Mudança de requisitos** durante o projeto | Média | Alto | Sprints curtas (2 sem) + feedback frequente + backlog priorizado |
 | R2 | **Baixa adoção** pelos usuários finais | Média | Alto | UAT com usuários reais desde M2 + treinamento + interface intuitiva |
 | R3 | **Resistência do técnico-adm** ao novo processo | Média | Médio | Envolvimento desde o kickoff + demonstrar redução de trabalho manual |
-| R4 | **Integração OAuth** mais complexa que previsto | Baixa | Médio | PoC na Sprint 1 + alternativa JWT simples como fallback |
+| R4 | **Integração OAuth** mais complexa que previsto | Baixa | Médio | PoC na Sprint 1 + biblioteca consolidada (django-allauth) |
 | R5 | **Subestimativa de esforço** técnico | Média | Médio | Buffer de 20% nas sprints + refinamento contínuo do backlog |
 | R6 | **Indisponibilidade** de membro do time | Baixa | Alto | Documentação contínua + pair programming + conhecimento distribuído |
 | R7 | **Performance insuficiente** no mobile | Baixa | Médio | Testes de carga antecipados + otimização progressiva |
@@ -193,6 +200,5 @@ Uma User Story é considerada **DONE** quando:
 - [ ] Testes de integração passando
 - [ ] Deploy realizado em staging
 - [ ] Documentação atualizada (se aplicável)
-- [ ] Aprovado pelo Product Owner
 
 [Anterior: Requisitos](04-requisitos.md) | [Voltar ao README](../README.md)
