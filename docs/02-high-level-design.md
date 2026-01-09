@@ -237,33 +237,107 @@ O sistema valida automaticamente as regras antes de aceitar dados.
 Exemplo de Model e Serializer Django para validar que a data da despesa não pode ter mais de 90 dias:
 
 ```python
-# models.py
-from django.db import models
-from django.core.exceptions import ValidationError
-from datetime import date
+# =============================================================================
+# models.py - Definição do Model (estrutura de dados no banco)
+# =============================================================================
 
-def validate_90_days_rule(expense_date):
-    """Validates that the expense is not older than 90 days."""
-    days_elapsed = (date.today() - expense_date).days
-    if days_elapsed > 90:
-        raise ValidationError('Expenses older than 90 days are not allowed')
+from django.db import models                    # ORM do Django para criar tabelas
+from django.core.exceptions import ValidationError  # Exceção para erros de validação
+from datetime import date                       # Para trabalhar com datas
 
-class ReimbursementItem(models.Model):
-    """Individual expense item within a reimbursement request."""
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    expense_date = models.DateField(validators=[validate_90_days_rule])
-    cost_center = models.ForeignKey('CostCenter', on_delete=models.PROTECT)
-    request = models.ForeignKey('ReimbursementRequest', on_delete=models.CASCADE)
-    receipt = models.FileField(upload_to='receipts/')
-    status = models.CharField(max_length=20, default='DRAFT')
 
-# serializers.py
+def validar_regra_90_dias(data_despesa):
+    """
+    Validador customizado que impede despesas com mais de 90 dias.
+
+    Esta função é chamada automaticamente pelo Django sempre que
+    alguém tenta salvar um item de reembolso. Se a despesa for
+    antiga demais, o sistema bloqueia antes de salvar no banco.
+
+    Args:
+        data_despesa: A data em que a despesa ocorreu
+
+    Raises:
+        ValidationError: Se a despesa tiver mais de 90 dias
+    """
+    dias_decorridos = (date.today() - data_despesa).days
+    if dias_decorridos > 90:
+        raise ValidationError('Despesas com mais de 90 dias não são permitidas')
+
+
+class ItemReembolso(models.Model):
+    """
+    Representa um item individual dentro de uma solicitação de reembolso.
+
+    Uma solicitação pode ter múltiplos itens, cada um com seu próprio
+    valor, data, centro de custo e comprovante. Isso permite aprovação
+    granular: o gestor pode aprovar alguns itens e rejeitar outros.
+    """
+
+    # Valor da despesa (até 99.999.999,99)
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Valor da despesa'
+    )
+
+    # Data da despesa - validada automaticamente pela regra dos 90 dias
+    data_despesa = models.DateField(
+        validators=[validar_regra_90_dias],
+        verbose_name='Data da despesa'
+    )
+
+    # Centro de custo - PROTECT impede exclusão de centro que tenha itens
+    centro_custo = models.ForeignKey(
+        'CentroCusto',
+        on_delete=models.PROTECT,
+        verbose_name='Centro de custo'
+    )
+
+    # Solicitação pai - CASCADE exclui itens se a solicitação for excluída
+    solicitacao = models.ForeignKey(
+        'SolicitacaoReembolso',
+        on_delete=models.CASCADE,
+        verbose_name='Solicitação'
+    )
+
+    # Arquivo do comprovante (PDF, JPG, PNG)
+    comprovante = models.FileField(
+        upload_to='comprovantes/',
+        verbose_name='Comprovante fiscal'
+    )
+
+    # Status do item no fluxo de aprovação
+    status = models.CharField(
+        max_length=20,
+        default='RASCUNHO',
+        verbose_name='Status'
+    )
+
+
+# =============================================================================
+# serializers.py - Conversão entre JSON da API e objetos Python
+# =============================================================================
+
 from rest_framework import serializers
 
-class ReimbursementItemSerializer(serializers.ModelSerializer):
+
+class ItemReembolsoSerializer(serializers.ModelSerializer):
+    """
+    Serializer converte dados entre formato JSON (API) e Model (banco).
+
+    Quando o frontend envia um POST com JSON, o serializer valida
+    os dados e cria o objeto. Quando o frontend faz GET, o serializer
+    converte o objeto do banco para JSON.
+    """
+
     class Meta:
-        model = ReimbursementItem
-        fields = ['id', 'amount', 'expense_date', 'cost_center', 'receipt', 'status']
+        model = ItemReembolso
+
+        # Campos expostos na API
+        fields = ['id', 'valor', 'data_despesa', 'centro_custo', 'comprovante', 'status']
+
+        # Status é somente leitura - só o sistema pode alterar
         read_only_fields = ['status']
 ```
 
